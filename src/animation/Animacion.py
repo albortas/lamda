@@ -33,59 +33,60 @@ class SpotAnime:
         self.lineas_leg = np.array(range(40)).reshape(4,5,2)
         self.torso = Spot()
     
-    def draw_floor(self, pos):
+    def draw_floor(self, foot_center, theta):
         """Dibuja el suelo y la cuadrícula."""
-        line = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
-                              [pos[1][0], pos[1][1], 0, 0, 0, 0],
+        line = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
+                              [theta[0], theta[1], 0, 0, 0, 0],
                               [500, 500, -500, -500],
                               [500, -500, -500, 500],
                               [0, 0, 0, 0])
         pygame.draw.polygon(self.screen, GREY, line, 0)
 
         for i in range(11):
-            grid_line_x = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
-                                         [pos[1][0], pos[1][1], 0, 0, 0, 0],
+            grid_line_x = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
+                                         [theta[0], theta[1], 0, 0, 0, 0],
                                          [-500 + i * 100, -500 + i * 100],
                                          [-500, 500], [0, 0])
             pygame.draw.lines(self.screen, DARK_GREY, False, grid_line_x, 1)
 
-            grid_line_y = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
-                                         [pos[1][0], pos[1][1], 0, 0, 0, 0],
+            grid_line_y = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
+                                         [theta[0], theta[1], 0, 0, 0, 0],
                                          [-500, 500],
                                          [-500 + i * 100, -500 + i * 100], [0, 0])
             pygame.draw.lines(self.screen, DARK_GREY, False, grid_line_y, 1)
 
-    def draw_axes(self, pos):
+    def draw_axes(self, foot_center):
         """Dibuja los ejes X, Y, Z."""
-        line = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0], [0, 0, 0, 0, 0, 0], axes[:,0], axes[:, 1], axes[:,2])
+        line = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
+                              [0, 0, 0, 0, 0, 0], axes[:,0], axes[:, 1], axes[:,2])
         color_axes = ["RED", GREEN, BLUE]        
         for i, color in enumerate(color_axes):
             pygame.draw.line(self.screen, color, line[0], line[1+i], 2)
 
-    def draw_radius_and_direction(self, pos, center_x, center_y, steering, walking_speed, walking_direction):
+    def draw_radius_and_direction(self, foot_center, theta, center, steering, walking_direction, walking_speed):
         """Dibuja el radio y la dirección."""
         center_display = True
         if steering < 2000:
-            line_radius = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
+            line_radius = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
                                          [0, 0, 0, 0, 0, 0],
-                                         [center_x, pos[2][0]], [center_y, pos[3][0]], [0, 0])
+                                         [center[0], foot_center[0]], [center[1], foot_center[1]], [0, 0])
         else:
-            center_x1 = pos[2][0] + (center_x - pos[2][0]) / steering * 2000
-            center_y1 = pos[3][0] + (center_y - pos[3][0]) / steering * 2000
-            line_radius = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
+            center_x1 = foot_center[0] + (center[0] - foot_center[0]) / steering * 2000
+            center_y1 = foot_center[1] + (center[1] - foot_center[1]) / steering * 2000
+            line_radius = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
                                          [0, 0, 0, 0, 0, 0],
-                                         [center_x1, pos[2][0]], [center_y1, pos[3][0]], [0, 0])
+                                         [center_x1, foot_center[0]], [center_y1, foot_center[1]], [0, 0])
             center_display = False
         
-        xd = pos[2][0] + walking_speed * cos(pos[1][2] + walking_direction - pi / 2)
-        yd = pos[3][0] + walking_speed * sin(pos[1][2] + walking_direction - pi / 2)
-        line_direction = display_rotate(-pos[2][0], -pos[3][0], -pos[4][0],
+        xd = foot_center[0] + walking_speed * cos(theta[2] + walking_direction - pi / 2)
+        yd = foot_center[1] + walking_speed * sin(theta[2] + walking_direction - pi / 2)
+        line_direction = display_rotate(-foot_center[0], -foot_center[1], -foot_center[2],
                                         [0, 0, 0, 0, 0, 0],
-                                        [xd, pos[2][0]], [yd, pos[3][0]], [0, 0])
+                                        [xd, foot_center[0]], [yd, foot_center[1]], [0, 0])
         
         
 
-        pygame.draw.lines(self.screen, CYAN, False, line_radius, 2)
+        #pygame.draw.lines(self.screen, CYAN, False, line_radius, 2)
         if (center_display == True):
             pygame.draw.circle(self.screen, BLACK,line_radius[0],5)
         pygame.draw.circle(self.screen, DARK_CYAN,line_radius[1],5)
@@ -93,7 +94,7 @@ class SpotAnime:
         
     
 
-    def draw_legs(self, pos, theta_spot, angles):
+    def draw_legs(self, foot_center, theta_spot, angles):
         """Dibuja las patas del robot."""
         lista = list(range(4))
         
