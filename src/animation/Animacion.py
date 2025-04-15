@@ -1,9 +1,8 @@
 from math import pi, sin, cos
 import pygame
 import numpy as np
-from src.kinematics.kinematics import FK
+from src.kinematics.forward_kinematics import forward_kinematics
 from src.utils.transformations import display_rotate
-from src.motion.Spot import Spot
 
 """Display colors """
 BLACK = (0,   0,   0)
@@ -31,7 +30,6 @@ class SpotAnime:
     def __init__(self):
         self.screen = pygame.display.set_mode((600, 600))
         self.lineas_leg = np.array(range(40)).reshape(4,5,2)
-        self.torso = Spot()
     
     def draw_floor(self, foot_center, theta):
         """Dibuja el suelo y la cuadrícula."""
@@ -94,35 +92,37 @@ class SpotAnime:
         
     
 
-    def draw_legs(self, foot_center, theta_spot, angles):
+    def draw_legs(self, foot_center, framecenter_comp, default_frame, foot_locations, theta, angles, dim_legs):
         """Dibuja las patas del robot."""
         lista = list(range(4))
         
-        lineb = display_rotate (pos[2][1] - pos[2][0], pos[3][1] - pos[3][0], pos[4][1] - pos[4][0],theta_spot,
-                                [self.torso.xlf,self.torso.xrf,self.torso.xrr, self.torso.xlr, self.torso.xlf],
-                                [self.torso.ylf,self.torso.yrf,self.torso.yrr,self.torso.ylr,self.torso.ylf],
-                                [self.torso.zlf,self.torso.zrf,self.torso.zrr,self.torso.zlr,self.torso.zlf])
+        lineb = display_rotate (framecenter_comp[0] - foot_center[0],
+                                framecenter_comp[1] - foot_center[1],
+                                framecenter_comp[2] - foot_center[2],theta,
+                                default_frame[0], default_frame[1], default_frame[2])
         
         legs = {
-            "lf": {"x": self.torso.xlf, "y": self.torso.ylf, "angles": angles[0], "n_pos": 0},
-            "rf": {"x": self.torso.xrf, "y": self.torso.yrf, "angles": angles[1], "n_pos": 1},
-            "rr": {"x": self.torso.xrr, "y": self.torso.yrr, "angles": angles[2], "n_pos": 2},
-            "lr": {"x": self.torso.xlr, "y": self.torso.ylr, "angles": angles[3], "n_pos": 3}
+            "lf": {"x": default_frame[0,0], "y": default_frame[1,0], "angles": angles[:,0], "n_pos": 0},
+            "rf": {"x": default_frame[0,1], "y": default_frame[1,1], "angles": angles[:,1], "n_pos": 1},
+            "rr": {"x": default_frame[0,2], "y": default_frame[1,2], "angles": angles[:,2], "n_pos": 2},
+            "lr": {"x": default_frame[0,3], "y": default_frame[1,3], "angles": angles[:,3], "n_pos": 3}
         }
 
         for i, (leg, data) in enumerate(legs.items()):
-            fk = FK(data["angles"], 1 if leg in ["lf", "lr"] else -1)
-            x_leg = [data["x"], data["x"] + fk[0], data["x"] + fk[1], data["x"] + fk[2], data["x"] + pos[0][0,data["n_pos"]]]
-            y_leg = [data["y"], data["y"] + fk[3], data["y"] + fk[4], data["y"] + fk[5], data["y"] + pos[0][1,data["n_pos"]]]
-            z_leg = [0, fk[6], fk[7], fk[8], pos[0][2,data["n_pos"]]]
+            fk = forward_kinematics(data["angles"], dim_legs, 1 if leg in ["lf", "lr"] else -1)
+            x_leg = [data["x"], data["x"] + fk[0], data["x"] + fk[1], data["x"] + fk[2], data["x"] + foot_locations[0,data["n_pos"]]]
+            y_leg = [data["y"], data["y"] + fk[3], data["y"] + fk[4], data["y"] + fk[5], data["y"] + foot_locations[1,data["n_pos"]]]
+            z_leg = [0, fk[6], fk[7], fk[8], foot_locations[2,data["n_pos"]]]
             
-            line_leg = display_rotate(pos[2][1] - pos[2][0], pos[3][1] - pos[3][0], pos[4][1] - pos[4][0],
-                                      theta_spot, x_leg, y_leg, z_leg)
+            line_leg = display_rotate(framecenter_comp[0] - foot_center[0],
+                                      framecenter_comp[1] - foot_center[1],
+                                      framecenter_comp[2] - foot_center[2],
+                                      theta, x_leg, y_leg, z_leg)
             lista[i] = line_leg            
             
             pygame.draw.lines(self.screen, RED, False, line_leg, 4)
         
-        pygame.draw.lines(self.screen, BLUE,False,lineb,10)
+        pygame.draw.lines(self.screen, BLUE, True,lineb,10)
            
         self.lineas_leg = np.array(lista)
         

@@ -1,38 +1,93 @@
-from math import sqrt
-from src.kinematics.kinematics import FK_Weight
+from math import sin, cos, sqrt
+from dataclasses import dataclass
 
-import src.motion.Spot as Spot
-Spot = Spot.Spot()
+# Constants
+BODY_WEIGHT = 897
+SHOULDER_WEIGHT = 99.3
+LEG_WEIGHT = 133.3
+FORELEG_WEIGHT = 107
 
+@dataclass
+class BodyPart:
+    x: float
+    y: float
+    z: float
+    weight: float
+
+# Body parts configuration
+BODY = BodyPart(0, 0, 0, BODY_WEIGHT)
+SHOULDER = BodyPart(0, 5, -9, SHOULDER_WEIGHT)
+LEG = BodyPart(0, 0, -31, LEG_WEIGHT)
+FORELEG = BodyPart(0, 0, -28, FORELEG_WEIGHT)
 
 class SpotCG:
-    def CG_calculation (self,thetalf,thetarf,thetarr,thetalr):
-        cgposlf=(FK_Weight(thetalf,1))
-        cgposrf=(FK_Weight(thetarf,-1))
-        cgposrr=(FK_Weight(thetarr,-1))
-        cgposlr=(FK_Weight(thetalr,1))
+    def __init__(self, default_frame, legs):
+        self.default_frame = default_frame
+        self.legs = legs
         
-        Weightsum = Spot.Weight_Body+4*(Spot.Weight_Shoulder+Spot.Weight_Leg+Spot.Weight_Foreleg)
+    def _transform_coordinates(self, theta, part, side, is_foreleg=False):
+        """Helper method to transform coordinates based on angles"""
+        if part == SHOULDER:
+            x = part.x
+            y = side * part.y * cos(theta[0]) - part.z * sin(theta[0])
+            z = side * part.y * sin(theta[0]) + part.z * cos(theta[0])
+            return x, y, z
         
-        xcglf=(cgposlf[0]+Spot.xlf)*Spot.Weight_Shoulder+(cgposlf[1]+Spot.xlf)*Spot.Weight_Leg+(cgposlf[2]+Spot.xlf)*Spot.Weight_Foreleg
-        xcgrf=(cgposrf[0]+Spot.xrf)*Spot.Weight_Shoulder+(cgposrf[1]+Spot.xrf)*Spot.Weight_Leg+(cgposrf[2]+Spot.xrf)*Spot.Weight_Foreleg
-        xcgrr=(cgposrr[0]+Spot.xrr)*Spot.Weight_Shoulder+(cgposrr[1]+Spot.xrr)*Spot.Weight_Leg+(cgposrr[2]+Spot.xrr)*Spot.Weight_Foreleg
-        xcglr=(cgposlr[0]+Spot.xlr)*Spot.Weight_Shoulder+(cgposlr[1]+Spot.xlr)*Spot.Weight_Leg+(cgposlr[2]+Spot.xlr)*Spot.Weight_Foreleg
-        xcg= (xcglf+xcgrf+xcgrr+xcglr+Spot.xCG_Body*Spot.Weight_Body)/Weightsum
+        if part == LEG and not is_foreleg:
+            x = part.x * cos(theta[1]) + part.z * sin(theta[1])
+            y = cos(theta[0]) * (self.legs['L0'] * side + side * part.y) + \
+                sin(theta[0]) * (self.legs['d'] - part.z * cos(theta[1]) + part.x * sin(theta[1]))
+            z = sin(theta[0]) * (self.legs['L0'] * side + side * part.y) - \
+                cos(theta[0]) * (self.legs['d'] - part.z * cos(theta[1]) + part.x * sin(theta[1]))
+            return x, y, z
         
-        ycglf=(cgposlf[3]+Spot.ylf)*Spot.Weight_Shoulder+(cgposlf[4]+Spot.ylf)*Spot.Weight_Leg+(cgposlf[5]+Spot.ylf)*Spot.Weight_Foreleg
-        ycgrf=(cgposrf[3]+Spot.yrf)*Spot.Weight_Shoulder+(cgposrf[4]+Spot.yrf)*Spot.Weight_Leg+(cgposrf[5]+Spot.yrf)*Spot.Weight_Foreleg
-        ycgrr=(cgposrr[3]+Spot.yrr)*Spot.Weight_Shoulder+(cgposrr[4]+Spot.yrr)*Spot.Weight_Leg+(cgposrr[5]+Spot.yrr)*Spot.Weight_Foreleg
-        ycglr=(cgposlr[3]+Spot.ylr)*Spot.Weight_Shoulder+(cgposlr[4]+Spot.ylr)*Spot.Weight_Leg+(cgposlr[5]+Spot.ylr)*Spot.Weight_Foreleg
-        ycg= (ycglf+ycgrf+ycgrr+ycglr+Spot.yCG_Body*Spot.Weight_Body)/Weightsum
+        if part == FORELEG or is_foreleg:
+            x = cos(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) - \
+                sin(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2]))
+            y = cos(theta[0]) * (self.legs['L0'] * side + side * part.y) + \
+                sin(theta[0]) * (self.legs['d'] + sin(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) + \
+                cos(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2])))
+            z = sin(theta[0]) * (self.legs['L0'] * side + side * part.y) - \
+                cos(theta[0]) * (self.legs['d'] + sin(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) + \
+                cos(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2])))
+            return x, y, z
+    
+    def FK_Weight(self, theta, side):
+        """Forward Kinematics for calculation of Center of Gravity"""
+        shoulder = self._transform_coordinates(theta, SHOULDER, side)
+        leg = self._transform_coordinates(theta, LEG, side)
+        foreleg = self._transform_coordinates(theta, FORELEG, side, is_foreleg=True)
         
-        zcglf=(cgposlf[6]+Spot.zlf)*Spot.Weight_Shoulder+(cgposlf[7]+Spot.zlf)*Spot.Weight_Leg+(cgposlf[8]+Spot.zlf)*Spot.Weight_Foreleg
-        zcgrf=(cgposrf[6]+Spot.zrf)*Spot.Weight_Shoulder+(cgposrf[7]+Spot.zrf)*Spot.Weight_Leg+(cgposrf[8]+Spot.zrf)*Spot.Weight_Foreleg
-        zcgrr=(cgposrr[6]+Spot.zrr)*Spot.Weight_Shoulder+(cgposrr[7]+Spot.zrr)*Spot.Weight_Leg+(cgposrr[8]+Spot.zrr)*Spot.Weight_Foreleg
-        zcglr=(cgposlr[6]+Spot.zlr)*Spot.Weight_Shoulder+(cgposlr[7]+Spot.zlr)*Spot.Weight_Leg+(cgposlr[8]+Spot.zlr)*Spot.Weight_Foreleg
-        zcg= (zcglf+zcgrf+zcgrr+zcglr+Spot.zCG_Body*Spot.Weight_Body)/Weightsum
+        return shoulder + leg + foreleg  # Returns tuple of 9 values
+    
+    def CG_calculation(self,theta):
+        cg_positions = {
+            'lf': self.FK_Weight(theta[:,0], 1),
+            'rf': self.FK_Weight(theta[:,1], -1),
+            'rr': self.FK_Weight(theta[:,2], -1),
+            'lr': self.FK_Weight(theta[:,3], 1)
+        }
         
-        return (xcg,ycg,zcg)
+        total_weight = BODY.weight + 4 * (SHOULDER.weight + LEG.weight + FORELEG.weight)
+        
+        # Calculate weighted positions for each axis
+        def calculate_axis(axis_idx, body_part_idx, body_weight_component):
+            weighted_sum = sum(
+                (pos[body_part_idx] + self.default_frame[axis_idx, i]) * weight
+                for i, (leg, pos) in enumerate(cg_positions.items())
+                for weight, body_part_idx in [
+                    (SHOULDER.weight, 0 + axis_idx*3),
+                    (LEG.weight, 1 + axis_idx*3),
+                    (FORELEG.weight, 2 + axis_idx*3)
+                ]
+            )
+            return (weighted_sum + body_weight_component * BODY.weight) / total_weight
+        
+        x_cg = calculate_axis(0, 0, BODY.x)
+        y_cg = calculate_axis(1, 1, BODY.y)
+        z_cg = calculate_axis(2, 2, BODY.z)
+        
+        return x_cg, y_cg, z_cg
     
     
     def CG_distance (self,x_legs,y_legs,z_legs,xcg,ycg,stance):
@@ -105,4 +160,4 @@ class SpotCG:
         else:
             d=abs(d)
         
-        return (d,xint,yint,balance)
+        return xint, yint, balance

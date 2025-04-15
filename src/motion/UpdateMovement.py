@@ -1,12 +1,7 @@
 import numpy as np
 from math import pi, sin, cos, sqrt, atan2
 
-from src.utils.transformations import rotz, new_coordinates
-
 # Constantes
-tstep = 0.01
-stepl = 0.125
-
 STEERING_THRESHOLD = 2000
 MIN_STEERING = 0.001
 GAP_THRESHOLD = 0.01
@@ -24,22 +19,22 @@ class UpdateMovement:
         self.cw = 1
         self.step_phase = ""
         
+    def update_movement(self, state, command):
+        self.update_joystick(state, command)
+        state.steering = self.steering
+        state.walking_direction = self.walking_direction
+        state.walking_speed = self.walking_speed
+        state.cw = self.cw
+        state.step_phase = self.step_phase
+        
     def update_joystick(self, state, command):
         # Determinar si hay movimiento
         if (abs(command.velocity[0]) > DEADZONE or abs(command.velocity[1]) > DEADZONE or command.stop):
             self.active_joystick(state, command)
         if (abs(command.velocity[0]) < DEADZONE and abs(command.velocity[1]) < DEADZONE and not command.stop):
             self.deactive_joystick(state, command)
-        self.update_phase(state, command)
-    
-    def update_movement(self, state, command):
-        #if command.walking:
-        self.update_joystick(state, command)
-        state.steering = self.steering
-        state.walking_direction = self.walking_direction
-        state.walking_speed = self.walking_speed
-        state.foot_center = self.nominal_abs_foot(state)
-        state.center = self.center(state)
+        self.update_command(state, command)
+        
     
     def active_joystick(self, state, command):
         command.trec = int(state.t) + 1
@@ -102,8 +97,7 @@ class UpdateMovement:
         if state.t > command.trec:
             state.t = command.trec
             
-    def update_phase(self, state, command):
-        # Paso de fase
+    def update_command(self, state, command):
         if state.t < command.tstart:
             self.step_phase = "start"
         else:
@@ -117,53 +111,11 @@ class UpdateMovement:
             command.stop = False
             command.walking = False
             command.free = True
+   
             
-    @property
-    def coor_circle(self):
-        xc = self.steering * np.cos(self.walking_direction)
-        yc = self.steering * np.sin(self.walking_direction)
-        return xc, yc
-    @property
-    def foot_position(self):
-        return self.default_stance[0], self.default_stance[1]
     
-    @property
-    def nominal_radius_angle(self):
-        radii = np.sqrt((self.coor_circle[0]-self.foot_position[0])**2 + (self.coor_circle[1]-self.foot_position[1])**2)
-        an = np.atan2(self.foot_position[1] - self.coor_circle[1], self.foot_position[0] - self.coor_circle[0])
-        return radii, an
-    
-    @property
-    def mangle(self):
-        maxr = max(self.nominal_radius_angle[0])
-        return self.walking_speed/maxr
-    
-    @property
-    def dtheta(self):
-        if (self.step_phase =='start')|(self.step_phase == 'stop'):           
-            dtheta = self.mangle/(1-stepl)*tstep/2* self.cw
-        else:
-            dtheta = self.mangle/(1-stepl)*tstep* self.cw
-        return dtheta
-    
-    def nominal_abs_foot(self, state):
-        """ Posición absoluta del centro nominal del pie """
-        xc, yc = self.coor_circle
-        Ms = rotz(state.theta[2])
-        s = new_coordinates(Ms,xc,yc,0, state.foot_center[0], state.foot_center[1], state.foot_center[2])
-        dMs = rotz(self.dtheta)
-        foot_center = new_coordinates(dMs, state.foot_center[0] - s[0], state.foot_center[1] - s[1], 0,
-                                      s[0], s[1], 0)
-        state.theta[2] += self.dtheta
-        return foot_center
-    
-    def center(self, state):
-        xc, yc = self.coor_circle
-        center_x = state.foot_center[0]+(xc*cos(state.theta[2])-yc*sin(state.theta[2])) #absolute center x position
-        center_y = state.foot_center[1]+(xc*sin(state.theta[2])+yc*cos(state.theta[2])) #absolute center y position
-        center = np.array([center_x, center_y])
-        return center
         
+    
         
             
         
