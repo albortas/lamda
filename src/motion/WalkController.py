@@ -22,8 +22,8 @@ class WalkGaitController():
         
     def step(self, state):
         xc, yc = self.crawlController.steering_center(state)
-        state.center = [state.body_center[0]+(xc*cos(state.theta[2])-yc*sin(state.theta[2])),
-                        state.body_center[1]+(xc*sin(state.theta[2])+yc*cos(state.theta[2]))]
+        state.center = [state.center_map[0]+(xc*cos(state.theta[2])-yc*sin(state.theta[2])),
+                        state.center_map[1]+(xc*sin(state.theta[2])+yc*cos(state.theta[2]))]
         state.angles_foot = inverse_kinematics_all(state.foot_position,self.legs)
         self.CG = self.gravity.CG_calculation(state.angles_foot)
         M = xyz_rotation_matrix(state.theta[0], state.theta[1], state.theta[2])

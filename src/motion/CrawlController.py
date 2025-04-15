@@ -21,19 +21,19 @@ class CrawlController:
         self.b_height = default_height
         self.framecorner = np.zeros(3)
         
-    def calcule_body_center(self, state):
-        # Calculando body_center
+    def calcule_center_map(self, state):
+        # Calculando centro mapa
         xc, yc = self.steering_center(state)
         dtheta = self.dtheta(state)
         state.theta[2] += dtheta
         
         Ms = rotz(state.theta[2])
         s = new_coordinates(Ms,xc,yc,0,
-                            state.body_center[0], state.body_center[1], state.body_center[2])
+                            state.center_map[0], state.center_map[1], state.center_map[2])
         dMs = rotz(dtheta)
-        state.body_center = new_coordinates(dMs,
-                                            state.body_center[0] - s[0],
-                                            state.body_center[1] - s[1], 0,
+        state.center_map = new_coordinates(dMs,
+                                            state.center_map[0] - s[0],
+                                            state.center_map[1] - s[1], 0,
                                             s[0], s[1], 0)
         
     def calcule_framecenter_comp(self, state):
@@ -46,18 +46,20 @@ class CrawlController:
                                 (comp[0] - self.CG[0]) * kcomp + self.x_offset,
                                 (comp[1] - self.CG[1]) * kcomp, 0)
         
-        state.framecenter_comp = [state.body_center[0] + compt[0],
-                                  state.body_center[1] + compt[1],
+        state.framecenter_comp = [state.center_map[0] + compt[0],
+                                  state.center_map[1] + compt[1],
                                   self.b_height]
         
 
     def start_walk_stop (self, state):
         
-        self.calcule_body_center(state)
+        self.calcule_center_map(state)
         self.calcule_framecenter_comp(state)
-        # Actulizando stance
-        self.stance = self.update_stance(state)
         
+        # Actualizando stance
+        self.stance = self.update_stance(state)
+        state.stance = self.stance
+
         # Calculo de framecorner
         Msi_comp = rotz(-state.theta[2])
         Ms_updated = xyz_rotation_matrix(state.theta[3], state.theta[4], state.theta[5] + state.theta[2])
@@ -128,7 +130,7 @@ class CrawlController:
                 xleg[i] = leg[0]
                 yleg[i] = leg[1]
                 zleg[i] = leg[2]
-                
+        
         state.foot_position = np.array([xleg, yleg, zleg])
         state.foot_abs = np.array([xabs, yabs, zabs])
                
@@ -254,8 +256,8 @@ class CrawlController:
                     
         Msi_comp = rotz(-state.theta[2])
         comp = new_coordinates(Msi_comp,
-                                x_abs_comp - state.body_center[0],
-                                y_abs_comp - state.body_center[1], 0)
+                                x_abs_comp - state.center_map[0],
+                                y_abs_comp - state.center_map[1], 0)
         return comp
     
     @property

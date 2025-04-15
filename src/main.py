@@ -22,23 +22,7 @@ class Robot:
         msg = JoystickMessage(joystick_state['axes'], joystick_state['buttons'])
         self.robot.joystick_command(msg)
         self.robot.run()
-        self.anime.screen.fill("white")
-        self.anime.draw_floor(self.robot.state.body_center, self.robot.state.theta)
-        self.anime.draw_axes(self.robot.state.body_center)
-        self.anime.draw_radius_and_direction(self.robot.state.body_center,
-                                             self.robot.state.theta,
-                                             self.robot.state.center,
-                                             self.robot.state.steering,
-                                             self.robot.state.walking_direction,
-                                             self.robot.state.walking_speed)
-        
-        self.anime.draw_legs(self.robot.state.body_center,
-                             self.robot.state.framecenter_comp,
-                             self.robot.default_frame,
-                             self.robot.state.foot_position,
-                             self.robot.state.theta,
-                             self.robot.state.angles_foot,
-                             self.legs)
+        self.anime.animate(self.robot.state, self.robot.default_frame, self.legs)
     
 if __name__ == "__main__":
     pygame.init()
@@ -50,7 +34,6 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 runnig = False            
         robot.iteration()
-        pygame.display.flip()
         clock.tick(60)
     pygame.quit()
     
