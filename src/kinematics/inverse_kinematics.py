@@ -15,10 +15,9 @@ def inverse_kinematics(x, y, z, legs, side):
         alpha = asin(E / C)
         beta = asin(y / C)
         theta1 = side * (-pi/2 + alpha) + beta
-        theta3 = acos((legs['L1']**2 + legs['L2']**2 - G**2)/(2 * legs['L1'] * legs['L2']))
-        gamma = atan(x/D)
+        theta3 = acos((legs['L1']**2 + legs['L2']**2 - G**2)/(2 * legs['L1'] * legs['L2'])) - pi
+        gamma = -asin(x/G)
         sigma = acos((legs['L1']**2 + G**2 - legs['L2']**2)/(2 * legs['L1'] * G))
-        sigma = legs['L2'] * sin(theta3) / G
         theta2 = gamma + sigma
     except ValueError:
         print('ValueError IK')
