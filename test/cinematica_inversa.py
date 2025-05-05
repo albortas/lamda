@@ -3,10 +3,10 @@ d = 10.73
 L0 = 58.09
 L1 = 108.31
 L2 = 138.00
-x = 0.5
+x = -0.5
 y = 10
 z = 200
-side = 1
+side = -1
 
 def IK1 (): #Inverse Kinematics
     """
@@ -52,17 +52,17 @@ def IK2 (): #Inverse Kinematics
     s = 1 for left leg
     s = -1 for right leg
     """
-    C = sqrt(y**2 + z**2)
-    E = sqrt(C**2 - L0**2)
-    D = E - d
-    G = sqrt(x**2 + D**2)
+    OG = sqrt(y**2 + z**2)
+    BG = sqrt(OG**2 - L0**2)
+    AG = BG - d
+    AC = sqrt(x**2 + AG**2)
     try:
-        alpha = asin(E / C)
-        beta = asin(y / C)
+        alpha = asin(BG / OG)
+        beta = asin(y / OG)
         theta1 = side * (-pi/2 + alpha) + beta
-        theta3 = acos((L1**2 + L2**2 - G**2)/(2 * L1 * L2))
-        gamma = -asin(x/G)
-        sigma = acos((L1**2 + G**2 - L2**2)/(2 * L1 * G))
+        theta3 = acos((L1**2 + L2**2 - AC**2)/(2 * L1 * L2)) - pi
+        gamma = -asin(x/AC)
+        sigma = acos((L1**2 + AC**2 - L2**2)/(2 * L1 * AC))
         theta2 = gamma + sigma
         
     except ValueError:

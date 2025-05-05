@@ -1,53 +1,55 @@
 import numpy as np
-from math import sqrt, asin, acos, pi, sin, sin, cos, atan
-def inverse_kinematics(x, y, z, legs, side):
-    """Calulo de cinematica de inversa
+from math import sqrt, asin, acos, pi, sin, sin, cos
+
+def forward_kinematics (theta, legs, side): #Forward Kinematics
+    """ Calculo de puntos de artic """
+    """
        s = 1 for left leg (pierna izquierda)
-       s = -1 for right leg (pierna derecha)"""
-       
+       s = -1 for right leg (pierna derecha)
+    """
+    x1 = 0
+    y1 =  legs['d'] * sin(theta[0])
+    z1 = -legs['d'] * cos(theta[0])
     
-             
-    C = sqrt(y**2 + z**2)
-    E = sqrt(C**2 - legs['L0']**2)
-    D = E - legs['d']
-    G = sqrt(x**2 + D**2)
+    x2 = 0
+    y2 =side * legs['L0'] * cos(theta[0]) + legs['d'] * sin(theta[0])
+    z2 =side * legs['L0'] * sin(theta[0]) - legs['d'] * cos(theta[0]) 
+            
+    x3 = - legs['L1'] *sin(theta[1])
+    y3 = side * legs['L0'] * cos(theta[0]) - (- legs['d'] - legs['L1'] * cos(theta[1])) * sin(theta[0])
+    z3 = side * legs['L0'] * sin(theta[0]) + (- legs['d'] - legs['L1'] * cos(theta[1])) * cos(theta[0])
+    
+    return [
+        x1, x2, x3,
+        y1, y2, y3,
+        z1, z2, z3
+    ]
+
+def inverse_kinematics(x, y, z, legs, side):
+    """Calulo de cinematica de inversa"""
+    """
+       s = 1 for left leg (pierna izquierda)
+       s = -1 for right leg (pierna derecha)
+    """
+       
+    OG = sqrt(y**2 + z**2)
+    BG = sqrt(OG**2 - legs['L0']**2)
+    AG = BG - legs['d']
+    AC = sqrt(x**2 + AG**2)
     try:
-        alpha = asin(E / C)
-        beta = asin(y / C)
+        alpha = asin(BG / OG)
+        beta = asin(y / OG)
         theta1 = side * (-pi/2 + alpha) + beta
-        theta3 = acos((legs['L1']**2 + legs['L2']**2 - G**2)/(2 * legs['L1'] * legs['L2'])) - pi
-        gamma = -asin(x/G)
-        sigma = acos((legs['L1']**2 + G**2 - legs['L2']**2)/(2 * legs['L1'] * G))
+        theta3 = acos((legs['L1']**2 + legs['L2']**2 - AC**2)/(2 * legs['L1'] * legs['L2'])) - pi
+        gamma = -asin(x/AC)
+        sigma = acos((legs['L1']**2 + AC**2 - legs['L2']**2)/(2 * legs['L1'] * AC))
         theta2 = gamma + sigma
+        
     except ValueError:
         print('ValueError IK')
         theta1 = theta2 = theta3 = pi/2  # Valores default
         
     return [theta1, theta2, theta3]
-
-def forward_kinematics (theta, legs, side): #Forward Kinematics
-    """ Calculation of articulation points """
-    """
-    s = 1 for left leg
-    s = -1 for right leg
-    """
-    shoulder1_x = 0
-    shoulder1_y =  legs['d'] * sin(theta[0])
-    shoulder1_z = -legs['d'] * cos(theta[0])
-    
-    shoulder2_x = 0
-    shoulder2_y =side * legs['L0'] * cos(theta[0]) + legs['d'] * sin(theta[0])
-    shoulder2_z =side * legs['L0'] * sin(theta[0]) - legs['d'] * cos(theta[0]) 
-            
-    elbow_x = - legs['L1'] *sin(theta[1])
-    elbow_y = side * legs['L0'] * cos(theta[0]) - (- legs['d'] - legs['L1'] * cos(theta[1])) * sin(theta[0])
-    elbow_z = side * legs['L0'] * sin(theta[0]) + (- legs['d'] - legs['L1'] * cos(theta[1])) * cos(theta[0])
-    
-    return [
-        shoulder1_x, shoulder2_x, elbow_x,
-        shoulder1_y, shoulder2_y, elbow_y,
-        shoulder1_z, shoulder2_z, elbow_z
-    ]
 
 def inverse_kinematics_all(pos_init, legs):
     #LF, RF, RR, LR
@@ -71,7 +73,7 @@ if __name__ == "__main__":
         'd': 1.0
     }
 
-    initial_angles = [np.pi/4, np.pi/4, np.pi/4]
+    initial_angles = [np.pi/2, np.pi/2, np.pi/2]
     side = 1
 
     # Función para actualizar la gráfica
@@ -89,14 +91,14 @@ if __name__ == "__main__":
         graph_base.set_offsets([0, 0])
         graph_base.set_3d_properties([0], 'blue')
         
-        graph_shoulder1.set_offsets([positions[0], positions[3]])
-        graph_shoulder1.set_3d_properties([positions[6]], 'green')
+        graph_hip1_yaw.set_offsets([positions[0], positions[3]])
+        graph_hip1_yaw.set_3d_properties([positions[6]], 'green')
         
-        graph_shoulder2.set_offsets([positions[1], positions[4]])
-        graph_shoulder2.set_3d_properties([positions[7]], 'orange')
+        graph_hip2_yaw.set_offsets([positions[1], positions[4]])
+        graph_hip2_yaw.set_3d_properties([positions[7]], 'orange')
         
-        graph_elbow.set_offsets([positions[2], positions[5]])
-        graph_elbow.set_3d_properties([positions[8]], 'red')
+        graph_knee.set_offsets([positions[2], positions[5]])
+        graph_knee.set_3d_properties([positions[8]], 'red')
         
         # Actualizar la posición del efector final
         x_target = positions[2]
@@ -113,12 +115,12 @@ if __name__ == "__main__":
         line_s12s2.set_data([positions[0], positions[1]], [positions[3], positions[4]])
         line_s12s2.set_3d_properties([positions[6], positions[7]])
         
-        line_s2elbow.set_data([positions[1], positions[2]], [positions[4], positions[5]])
-        line_s2elbow.set_3d_properties([positions[7], positions[8]])
+        line_s2knee.set_data([positions[1], positions[2]], [positions[4], positions[5]])
+        line_s2knee.set_3d_properties([positions[7], positions[8]])
         
         # Conexión del efector final
-        line_elbow_target.set_data([positions[2], x_target], [positions[5], y_target])
-        line_elbow_target.set_3d_properties([positions[8], z_target])
+        line_knee_target.set_data([positions[2], x_target], [positions[5], y_target])
+        line_knee_target.set_3d_properties([positions[8], z_target])
         
         fig.canvas.draw_idle()
 
@@ -132,16 +134,16 @@ if __name__ == "__main__":
 
     # Plot de las articulaciones
     graph_base = ax.scatter(0, 0, 0, color='blue', s=100, label='Base')
-    graph_shoulder1 = ax.scatter(positions_initial[0], positions_initial[3], positions_initial[6], color='green', s=50, label='Shoulder 1')
-    graph_shoulder2 = ax.scatter(positions_initial[1], positions_initial[4], positions_initial[7], color='orange', s=50, label='Shoulder 2')
-    graph_elbow = ax.scatter(positions_initial[2], positions_initial[5], positions_initial[8], color='red', s=50, label='Elbow')
+    graph_hip1_yaw = ax.scatter(positions_initial[0], positions_initial[3], positions_initial[6], color='green', s=50, label='hip 1')
+    graph_hip2_yaw = ax.scatter(positions_initial[1], positions_initial[4], positions_initial[7], color='orange', s=50, label='hip 2')
+    graph_knee = ax.scatter(positions_initial[2], positions_initial[5], positions_initial[8], color='red', s=50, label='knee')
     graph_target = ax.scatter(positions_initial[2], positions_initial[5], positions_initial[8], color='red', s=50, label='Target Point')
 
     # Plot de las conexiones
     line_base2s1, = ax.plot([0, positions_initial[0]], [0, positions_initial[3]], [0, positions_initial[6]], color='blue')
     line_s12s2, = ax.plot([positions_initial[0], positions_initial[1]], [positions_initial[3], positions_initial[4]], [positions_initial[6], positions_initial[7]], color='blue')
-    line_s2elbow, = ax.plot([positions_initial[1], positions_initial[2]], [positions_initial[4], positions_initial[5]], [positions_initial[7], positions_initial[8]], color='blue')
-    line_elbow_target, = ax.plot([positions_initial[2], positions_initial[2]], [positions_initial[5], positions_initial[5]], [positions_initial[8], positions_initial[8]], color='red', linestyle='--')
+    line_s2knee, = ax.plot([positions_initial[1], positions_initial[2]], [positions_initial[4], positions_initial[5]], [positions_initial[7], positions_initial[8]], color='blue')
+    line_knee_target, = ax.plot([positions_initial[2], positions_initial[2]], [positions_initial[5], positions_initial[5]], [positions_initial[8], positions_initial[8]], color='red', linestyle='--')
 
     # Configurar los sliders
     ax_theta1 = plt.axes([0.2, 0.3, 0.6, 0.03])
