@@ -22,9 +22,9 @@ def xyz_rotation_matrix(thetax, thetay, thetaz, inverse = False):
     if inverse:
         # Rzyx = Rx * Ry * Rz
         M = np.array([
-            [cy * cz, -sz * cy, sy],
-            [sx * sy * cz + sz * cx, -sx * sy * sz + cx * cz, -sx * cy],
-            [sx * sz - sy * cx * cz, sx * cz + sy * sz * cx, cx * cy]
+            [cz * cy, -sz * cy, sy],
+            [cz * sy * sx + sz * cx, -sz * sy * sx + cz * cx, -cy * sx],
+            [-cz * sy * cx + sz * sx, sz * sy * cx + cz * sx, cy * cx]
         ])
     else:
         # Rxyz = Rz * Ry * Rx

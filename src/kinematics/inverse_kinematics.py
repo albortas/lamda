@@ -16,8 +16,8 @@ def forward_kinematics (theta, legs, side): #Forward Kinematics
     z2 =side * legs['L0'] * sin(theta[0]) - legs['d'] * cos(theta[0]) 
             
     x3 = - legs['L1'] *sin(theta[1])
-    y3 = side * legs['L0'] * cos(theta[0]) - (- legs['d'] - legs['L1'] * cos(theta[1])) * sin(theta[0])
-    z3 = side * legs['L0'] * sin(theta[0]) + (- legs['d'] - legs['L1'] * cos(theta[1])) * cos(theta[0])
+    y3 = side * legs['L0'] * cos(theta[0]) + (legs['d'] + legs['L1'] * cos(theta[1])) * sin(theta[0])
+    z3 = side * legs['L0'] * sin(theta[0]) - (legs['d'] + legs['L1'] * cos(theta[1])) * cos(theta[0])
     
     return [
         x1, x2, x3,
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         'd': 1.0
     }
 
-    initial_angles = [np.pi/2, np.pi/2, np.pi/2]
+    initial_angles = [0, 0, 0]
     side = 1
 
     # Función para actualizar la gráfica
