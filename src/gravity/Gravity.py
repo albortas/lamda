@@ -20,7 +20,7 @@ SHOULDER = BodyPart(0, 5, -9, SHOULDER_WEIGHT)
 LEG = BodyPart(0, 0, -31, LEG_WEIGHT)
 FORELEG = BodyPart(0, 0, -28, FORELEG_WEIGHT)
 
-class SpotCG:
+class CGravity:
     def __init__(self, default_frame, legs):
         self.default_frame = default_frame
         self.legs = legs
@@ -35,31 +35,29 @@ class SpotCG:
         
         if part == LEG and not is_foreleg:
             x = part.x * cos(theta[1]) + part.z * sin(theta[1])
-            y = cos(theta[0]) * (self.legs['L0'] * side + side * part.y) + \
-                sin(theta[0]) * (self.legs['d'] - part.z * cos(theta[1]) + part.x * sin(theta[1]))
-            z = sin(theta[0]) * (self.legs['L0'] * side + side * part.y) - \
-                cos(theta[0]) * (self.legs['d'] - part.z * cos(theta[1]) + part.x * sin(theta[1]))
+            y = side * (self.legs['L0'] + part.y) * cos(theta[0])+ \
+                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * sin(theta[0])
+            z = side * (self.legs['L0'] + part.y) * sin(theta[0]) - \
+                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * cos(theta[1])
             return x, y, z
         
         if part == FORELEG or is_foreleg:
-            x = cos(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) - \
-                sin(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2]))
-            y = cos(theta[0]) * (self.legs['L0'] * side + side * part.y) + \
-                sin(theta[0]) * (self.legs['d'] + sin(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) + \
-                cos(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2])))
-            z = sin(theta[0]) * (self.legs['L0'] * side + side * part.y) - \
-                cos(theta[0]) * (self.legs['d'] + sin(theta[1]) * (part.x * cos(theta[2]) + part.z * sin(theta[2])) + \
-                cos(theta[1]) * (self.legs['L1'] - part.z * cos(theta[2]) + part.x * sin(theta[2])))
+            x = -self.legs['L1'] * sin(theta[1]) + \
+                part.x * cos(theta[1] + theta[2]) + part.z * cos(theta[1] + theta[2])
+            y = side * (self.legs['L0'] + part.y) * cos(theta[0]) + \
+                (self.legs['d'] + self.legs['L1'] * cos(theta[1]) + part.x * sin(theta[1] + theta[2]) - part.z * cos(theta[1] + theta[2])) * sin(theta[0])
+            z = side * (self.legs['L0'] + part.y) * sin(theta[0]) - \
+                (self.legs['d'] + self.legs['L1'] * cos(theta[1]) + part.x * sin(theta[1] + theta[2]) - part.z * cos(theta[1] + theta[2])) * cos(theta[0])
             return x, y, z
     
     def FK_Weight(self, theta, side):
-        """Forward Kinematics for calculation of Center of Gravity"""
+        """Ciematica Directa para el cálculo del Centro de Gravedad"""
         shoulder = self._transform_coordinates(theta, SHOULDER, side)
         leg = self._transform_coordinates(theta, LEG, side)
         foreleg = self._transform_coordinates(theta, FORELEG, side, is_foreleg=True)
-        
+        print(shoulder, leg, foreleg)
         return shoulder + leg + foreleg  # Returns tuple of 9 values
-    
+           
     def CG_calculation(self,theta):
         cg_positions = {
             'lf': self.FK_Weight(theta[:,0], 1),
@@ -69,7 +67,7 @@ class SpotCG:
         }
         
         total_weight = BODY.weight + 4 * (SHOULDER.weight + LEG.weight + FORELEG.weight)
-        
+                       
         # Calculate weighted positions for each axis
         def calculate_axis(axis_idx, body_part_idx, body_weight_component):
             weighted_sum = sum(
@@ -87,9 +85,10 @@ class SpotCG:
         y_cg = calculate_axis(1, 1, BODY.y)
         z_cg = calculate_axis(2, 2, BODY.z)
         
+        print (x_cg, y_cg, z_cg)
+        
         return x_cg, y_cg, z_cg
-    
-    
+             
     def CG_distance (self,x_legs,y_legs,z_legs,xcg,ycg,stance):
         
         # line equation c * x + s * y - p  = 0

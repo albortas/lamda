@@ -22,9 +22,5 @@ def rotxyz(alpha, beta, gamma):
 def rotzyx(gamma, beta, alpha):
     return rotx(alpha) @ roty(beta) @ rotz(gamma)
 
-if __name__ == "__main__":
-    alpha = sp.Symbol('alpha')
-    beta = sp.Symbol('beta')
-    gamma = sp.Symbol('gamma')
-    #print(rotxyz(alpha, beta, gamma))
-    print(rotzyx(gamma, beta, alpha))
+
+    

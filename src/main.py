@@ -24,20 +24,8 @@ class Robot:
         self.robot.run()
         self.anime.animate(self.robot.state, self.robot.default_frame, self.legs)
     
-if __name__ == "__main__":
-    pygame.init()
-    clock = pygame.time.Clock()
-    robot = Robot()
-    runnig = True
-    while runnig:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                runnig = False            
-        robot.iteration()
-        clock.tick(60)
-    pygame.quit()
-    
-    """ try:
+if __name__ == "__main__":      
+    try:
         pygame.init()
         clock = pygame.time.Clock()
         robot = Robot()
@@ -54,4 +42,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Programa detenido error: {e}, {type(e)}")
     finally:
-        pygame.quit() """
+        pygame.quit()

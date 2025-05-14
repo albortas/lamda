@@ -1,8 +1,8 @@
 import numpy as np
 from math import sin, cos
 
-from src.gravity.Gravity import SpotCG
-from src.kinematics.inverse_kinematics import inverse_kinematics_all
+from src.gravity.Gravity import CGravity
+from src.kinematics.kinematics import inverse_kinematics_all
 from src.utils.transformations import xyz_rotation_matrix, new_coordinates
 from src.motion.UpdateMovement import UpdateMovement
 from src.motion.CrawlController import CrawlController
@@ -12,7 +12,7 @@ class WalkGaitController():
     def __init__(self, x_offset, default_height, legs, default_stance, default_frame):
         self.legs = legs
         self.CG = np.zeros(3)
-        self.gravity = SpotCG(default_frame, legs)
+        self.gravity = CGravity(default_frame, legs)
         self.updateMovement = UpdateMovement(default_stance)
         self.crawlController = CrawlController(x_offset, default_height, self.CG, default_stance, default_frame)
         

@@ -37,13 +37,9 @@ def inverse_kinematics(x, y, z, legs, side):
     AG = BG - legs['d']
     AC = sqrt(x**2 + AG**2)
     try:
-        alpha = asin(BG / OG)
-        beta = asin(y / OG)
-        theta1 = side * (-pi/2 + alpha) + beta
-        theta3 = acos((legs['L1']**2 + legs['L2']**2 - AC**2)/(2 * legs['L1'] * legs['L2'])) - pi
-        gamma = -asin(x/AC)
-        sigma = acos((legs['L1']**2 + AC**2 - legs['L2']**2)/(2 * legs['L1'] * AC))
-        theta2 = gamma + sigma
+        theta1 = side * (-pi/2 + asin(BG / OG)) + asin(y / OG)
+        theta2 = acos((legs['L1']**2 + AC**2 - legs['L2']**2)/(2 * legs['L1'] * AC)) - asin(x/AC)
+        theta3 = -acos((legs['L1']**2 + legs['L2']**2 - AC**2)/(2 * legs['L1'] * legs['L2']))
         
     except ValueError:
         print('ValueError IK')

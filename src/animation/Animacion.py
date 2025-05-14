@@ -1,7 +1,7 @@
 from math import pi, sin, cos
 import pygame
 import numpy as np
-from src.kinematics.forward_kinematics import forward_kinematics
+from src.kinematics.kinematics import forward_kinematics
 from src.utils.transformations import display_rotate
 
 """Display colors """

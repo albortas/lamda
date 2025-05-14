@@ -29,15 +29,34 @@ def MatrixA(rot, trans):
     return rot @ trans
 
 if __name__ == "__main__":
+    x_hg = sp.Symbol('x_HCG')
+    y_hg = sp.Symbol('y_HCG')
+    z_hg = sp.Symbol('z_HCG')
+    x_tg = sp.Symbol('x_TCG')
+    y_tg = sp.Symbol('y_TCG')
+    z_tg = sp.Symbol('z_TCG')
+    x_fg = sp.Symbol('x_FCG')
+    y_fg = sp.Symbol('y_FCG')
+    z_fg = sp.Symbol('z_FCG')
     d = sp.Symbol('d')
-    L0 = sp.Symbol('L0')
-    L1 = sp.Symbol('L1')
-    q1 = sp.Symbol('q1')
-    q2 = sp.Symbol('q2')
-    q3 = sp.Symbol('q3')
+    L0 = sp.Symbol('L_0')
+    L1 = sp.Symbol('L_1')
+    #q1 = sp.Symbol('theta[0]')
+    #q2 = sp.Symbol('theta[1]')
+    #q3 = sp.Symbol('theta[2]')
+    q1 = sp.Symbol('%theta_1')
+    q2 = sp.Symbol('%theta_2')
+    q3 = sp.Symbol('%theta_3')
     A0_1 = MatrixA(HRotx(q1), HTrans(0, 0, -d))
-    A1_2 = HTrans(0, L0, 0)
-    A2_3 = MatrixA(HRoty(q2), HTrans(0, 0, -L1))
+    A1_2 = HTrans(0,L0,0)
     A0_2 = A0_1 @ A1_2
+    A1 = MatrixA(HRotx(q1), HTrans(x_hg, y_hg, z_hg))
+    A2 = MatrixA(HRoty(q2), HTrans(x_tg, y_tg, z_tg))
+    T_2  = A0_2 @ A2
+    A2_3 = MatrixA(HRoty(q2), HTrans(0, 0, -L1))
     A0_3 = A0_2 @ A2_3
-    print(A0_3)
+    A3 = MatrixA(HRoty(q3), HTrans(x_fg, y_fg, z_fg))
+    T3 = A0_3 @ A3
+    T3 = sp.simplify(T3[2,3])
+    print(T3)
+   
