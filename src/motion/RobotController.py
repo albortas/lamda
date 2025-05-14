@@ -13,8 +13,8 @@ class RobotController:
         self.delta_y = self.frame_y + self.legs['L0']
         self.default_height = 200
         self.x_offset = 0
-        self.x_shift_from = -5
-        self.x_shift_back = -5
+        self.x_shift_from = 0
+        self.x_shift_back = 0
         self.walkGaitController = WalkGaitController(self.x_offset, self.default_height, self.legs, self.default_stance, self.default_frame)
         self.currentController = self.walkGaitController
         self.state = State(self.default_stance, self.default_position, self.default_framecenter_comp)

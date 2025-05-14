@@ -26,38 +26,6 @@ class CGravity:
     def __init__(self, default_frame, legs):
         self.default_frame = default_frame
         self.legs = legs
-        
-    def _transform_coordinates(self, theta, part, side, is_foot=False):
-        """Helper method to transform coordinates based on angles"""
-        if part == HIP:
-            x = part.x
-            y = side * part.y * cos(theta[0]) - part.z * sin(theta[0])
-            z = side * part.y * sin(theta[0]) + part.z * cos(theta[0])
-            return x, y, z
-        
-        if part == THIGH and not is_foot:
-            x = part.x * cos(theta[1]) + part.z * sin(theta[1])
-            y = side * (self.legs['L0'] + part.y) * cos(theta[0])+ \
-                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * sin(theta[0])
-            z = side * (self.legs['L0'] + part.y) * sin(theta[0]) - \
-                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * cos(theta[0])
-            return x, y, z
-        
-        if part == FOOT or is_foot:
-            x = -self.legs['L1'] * sin(theta[1]) + part.x * cos(theta[1] + theta[2]) + part.z * sin(theta[1] + theta[2])
-            y = side * (self.legs['L0'] + part.y) * cos(theta[0]) + \
-                (self.legs['d'] + self.legs['L1'] * cos(theta[1]) + part.x * sin(theta[1] + theta[2]) - part.z * cos(theta[1] + theta[2])) * sin(theta[0])
-            z = side * (self.legs['L0'] + part.y) * sin(theta[0]) - \
-                (self.legs['d'] + self.legs['L1'] * cos(theta[1]) + part.x * sin(theta[1] + theta[2]) - part.z * cos(theta[1] + theta[2])) * cos(theta[0])
-            return x, y, z
-    
-    def compute_leg_segments_com(self, theta, side):
-        """Cálculo del Centro de Gravedad de los segmentos de la pierna"""
-        hip = self._transform_coordinates(theta, HIP, side)
-        thigh = self._transform_coordinates(theta, THIGH, side)
-        foot = self._transform_coordinates(theta, FOOT, side, is_foot=True)
-        print(hip, thigh, foot)
-        return hip + thigh + foot  # Returns tuple of 9 values
     
     def compute_leg_segments_cm(self, theta, side):
         
@@ -81,36 +49,6 @@ class CGravity:
                          [y_h, y_t, y_f],
                          [z_h, z_t, z_f]])
         
-        
-    def CM_calculation(self,theta):
-        cg_positions = {
-            'lf': self.compute_leg_segments_com(theta[:,0], 1),
-            'rf': self.compute_leg_segments_com(theta[:,1], -1),
-            'rr': self.compute_leg_segments_com(theta[:,2], -1),
-            'lr': self.compute_leg_segments_com(theta[:,3], 1)
-        }
-        
-        total_weight = BODY.weight + 4 * (HIP.weight + THIGH.weight + FOOT.weight)
-                       
-        # Calculate weighted positions for each axis
-        def calculate_axis(axis_idx, body_part_idx, body_weight_component):
-            weighted_sum = sum(
-                (pos[body_part_idx] + self.default_frame[axis_idx, i]) * weight
-                for i, (leg, pos) in enumerate(cg_positions.items())
-                for weight, body_part_idx in [
-                    (HIP.weight, 0 + axis_idx*3),
-                    (THIGH.weight, 1 + axis_idx*3),
-                    (FOOT.weight, 2 + axis_idx*3)
-                ]
-            )
-            return (weighted_sum + body_weight_component * BODY.weight) / total_weight
-        
-        x_cg = calculate_axis(0, 0, BODY.x)
-        y_cg = calculate_axis(1, 1, BODY.y)
-        z_cg = calculate_axis(2, 2, BODY.z)
-        
-        return x_cg, y_cg, z_cg
-    
     def CM_calculation_o(self,theta):
         cg_positions = [
             self.compute_leg_segments_cm(theta[:,0], 1),  # lf
