@@ -38,7 +38,7 @@ class CGravity:
             y = side * (self.legs['L0'] + part.y) * cos(theta[0])+ \
                 (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * sin(theta[0])
             z = side * (self.legs['L0'] + part.y) * sin(theta[0]) - \
-                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * cos(theta[1])
+                (self.legs['d'] + part.x * sin(theta[1]) - part.z * cos(theta[1])) * cos(theta[0])
             return x, y, z
         
         if part == FORELEG or is_foreleg:
