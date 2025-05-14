@@ -55,8 +55,8 @@ if __name__ == "__main__":
     T_2  = A0_2 @ A2
     A2_3 = MatrixA(HRoty(q2), HTrans(0, 0, -L1))
     A0_3 = A0_2 @ A2_3
-    A3 = MatrixA(HRoty(q3), HTrans(x_fg, y_fg, z_fg))
+    A3 = MatrixA(HRoty(-q3), HTrans(x_fg, y_fg, z_fg))
     T3 = A0_3 @ A3
-    T3 = sp.simplify(T3[2,3])
+    T3 = sp.simplify(T3[0,3])
     print(T3)
    
