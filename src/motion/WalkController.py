@@ -25,12 +25,13 @@ class WalkGaitController():
         state.center = [state.center_map[0]+(xc*cos(state.theta[2])-yc*sin(state.theta[2])),
                         state.center_map[1]+(xc*sin(state.theta[2])+yc*cos(state.theta[2]))]
         state.angles_foot = inverse_kinematics_all(state.foot_position,self.legs)
-        self.CG = self.gravity.CG_calculation(state.angles_foot)
+        self.CG = self.gravity.CM_calculation_o(state.angles_foot)
         M = xyz_rotation_matrix(state.theta[0], state.theta[1], state.theta[2])
         state.CGabs = new_coordinates(M, self.CG[0], self.CG[1], self.CG[2],
                                       state.framecenter_comp[0], state.framecenter_comp[1], state.framecenter_comp[2])
         state.dCG = self.gravity.CG_distance(state.foot_abs[0], state.foot_abs[1], state.foot_abs[2], state.CGabs[0], state.CGabs[1], state.stance)
-                    
+        print(self.CG)
+        
     def run(self, state, command):
         self.step(state)
         if command.walking:
