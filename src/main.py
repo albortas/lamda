@@ -11,7 +11,7 @@ class JoystickMessage:
         
 class Robot:
     def __init__(self):
-        self.body = {'Lb': 187.1, 'Wb': 78}
+        self.body = {'Lb': 223.5, 'Wb': 78}
         self.legs = {'d': 10.73, 'L0': 58.09, 'L1': 108.31, 'L2':138}
         self.robot = RobotController(self.body, self.legs)
         self.ps4 = PS4Controller()

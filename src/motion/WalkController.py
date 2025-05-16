@@ -30,7 +30,6 @@ class WalkGaitController():
         state.CGabs = new_coordinates(M, self.CG[0], self.CG[1], self.CG[2],
                                       state.framecenter_comp[0], state.framecenter_comp[1], state.framecenter_comp[2])
         state.dCG = self.centerMass.CG_distance(state.foot_abs[0], state.foot_abs[1], state.foot_abs[2], state.CGabs[0], state.CGabs[1], state.stance)
-        print(self.CG)
         
     def run(self, state, command):
         self.step(state)
