@@ -111,18 +111,3 @@ class UpdateMovement:
             command.stop = False
             command.walking = False
             command.free = True
-   
-            
-    
-        
-    
-        
-            
-        
-        
-        
-            
-            
-            
-        
-    

@@ -87,7 +87,7 @@ class CrawlController:
          
         for i in range (0,4):              
             if self.stance[i] == False:
-                #relative position calculation (used for inverse kinematics)
+                #cálculo de la posición relativa (utilizado para cinemática inversa)
                 alphah = an[i]+mangle*alpha[i]*state.cw
                 xleg_target = xc + radii[i]*cos(alphah) -(comp[0]- self.CG[0])*kcomp - self.x_offset - self.default_frame[0,i]
                 yleg_target = yc + radii[i]*sin(alphah) -(comp[1]- self.CG[1])*kcomp - self.default_frame[1,i]
@@ -96,14 +96,14 @@ class CrawlController:
                                               state.foot_abs[0,i]- self.framecorner[0,i],
                                               state.foot_abs[1,i]- self.framecorner[1,i],
                                               - self.framecorner[2,i])
-                #interpolate between current position and targe
-                if ((SEQ[i] + STEPL - state.t1)> TSTEP):
+                #interpolar entre la posición actual y el objetivo
+                if ((SEQ[i] + STEPL - state.t1) > TSTEP):
                     xint[i] = leg_current[0]+(xleg_target - leg_current[0])*(TSTEP)/(SEQ[i]+STEPL-state.t1)
                     yint[i] = leg_current[1]+(yleg_target - leg_current[1])*(TSTEP)/(SEQ[i]+STEPL-state.t1)
                 else:
                     xint[i] = xleg_target 
                     yint[i] = yleg_target   
-                zint[i] = leg_current[2] + v_amp_t*(1+sin(alphav[i]))/2                 
+                zint[i] = leg_current[2] + v_amp_t*(1+sin(alphav[i]))/2
                 #print (leg_current[2],zint[i],leg_current[2]-zint[i])
                 Msi_body = xyz_rotation_matrix (-state.theta[3],-state.theta[4],-state.theta[5],True) 
                 legs = new_coordinates(Msi_body,xint[i],yint[i],zint[i])
@@ -111,11 +111,11 @@ class CrawlController:
                 yleg[i]= legs[1]
                 zleg[i]= legs[2]
                 
-                #absolute foot position 
-                #Msb_updated = Spot.xyz_rotation_matrix (self,0,0,theta_spot_updated[2]+theta_spot_updated[5],False)
-                foot_abs = new_coordinates(Ms_updated,xleg[i],yleg[i],zleg[i],self.framecorner[0,i],self.framecorner[1,i],self.framecorner[2,i])
+                #posición absoluta del pie 
+                foot_abs = new_coordinates(Ms_updated,
+                                           xleg[i],yleg[i],zleg[i],
+                                           self.framecorner[0,i],self.framecorner[1,i],self.framecorner[2,i])
                 
-
                 xabs[i] = foot_abs[0]
                 yabs[i] = foot_abs[1]
                 zabs[i] = foot_abs[2]
@@ -126,14 +126,17 @@ class CrawlController:
                 zabs[i] = 0
                 
                 #relative foot position of foot on the ground/floor for inverse kinematics
-                leg = new_coordinates(Msi_updated,xabs[i]- self.framecorner[0,i],yabs[i]- self.framecorner[1,i],zabs[i]- self.framecorner[2,i])
+                leg = new_coordinates(Msi_updated,
+                                      xabs[i]- self.framecorner[0,i],
+                                      yabs[i]- self.framecorner[1,i],
+                                      zabs[i]- self.framecorner[2,i])
                 xleg[i] = leg[0]
                 yleg[i] = leg[1]
                 zleg[i] = leg[2]
         
         state.foot_position = np.array([xleg, yleg, zleg])
         state.foot_abs = np.array([xabs, yabs, zabs])
-               
+        #print(state.foot_position)
     
     def steering_center(self, state):
         """Coordenadas del centro de dirección en el marco puntual"""
@@ -229,7 +232,7 @@ class CrawlController:
         
         for i, (idx, t_idx) in enumerate(secuencia):
             x_abs_area[i] = ((state.foot_abs[0][idx[0]] + state.foot_abs[0][idx[1]])*weight+ state.foot_abs[0][t_idx])/(2*weight+1) 
-            y_abs_area[i] = ((state.foot_abs[1][idx[0]] + state.foot_abs[1][idx[1]])*weight+ state.foot_abs[1][t_idx])/(2*weight+1) 
+            y_abs_area[i] = ((state.foot_abs[1][idx[0]] + state.foot_abs[1][idx[1]])*weight+ state.foot_abs[1][t_idx])/(2*weight+1)
         
         if sum(self.stance) == 4:
             istart, iend = 0, 0

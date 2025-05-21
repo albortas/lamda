@@ -25,8 +25,6 @@ class Robot:
         self.anime.animate(self.robot.state, self.robot.default_frame, self.legs)
     
 if __name__ == "__main__":  
-    
-    
     pygame.init()
     clock = pygame.time.Clock()
     robot = Robot()
