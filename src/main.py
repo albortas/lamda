@@ -2,7 +2,7 @@ import pygame
 
 from src.motion.RobotController import RobotController
 from src.controller.PS4Controller import PS4Controller
-from src.animation.Animacion import SpotAnime
+from src.animation.Animation import Animation
 
 class JoystickMessage:
     def __init__(self, axes, buttons):
@@ -15,7 +15,7 @@ class Robot:
         self.legs = {'d': 10.73, 'L0': 58.09, 'L1': 108.31, 'L2':138}
         self.robot = RobotController(self.body, self.legs)
         self.ps4 = PS4Controller()
-        self.anime = SpotAnime()
+        self.anime = Animation()
     
     def iteration(self):
         joystick_state = self.ps4.get_joystick_state()

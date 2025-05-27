@@ -27,7 +27,8 @@ axes = np.array([[0, 0, 0],
                  [0, 0, 100]])
 
 
-class SpotAnime:
+class Animation:
+    """Clase para la animación de la simulación."""
     
     def __init__(self):
         self.screen = pygame.display.set_mode((600, 600))
