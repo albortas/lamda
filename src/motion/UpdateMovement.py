@@ -75,7 +75,7 @@ class UpdateMovement:
         # Calcular velocidad de caminata
         min_h_amp = H_AMP * (self.steering / (2e6) + 0.5)
         xa = 1 + cos(self.walking_direction - pi/2)
-        self.walking_speed = min(1, self.module) * min(H_AMP, min_h_amp) * (0.125 * xa**2 + 0.125 * xa + 0.25)
+        self.walking_speed = min(1, self.module) * min(H_AMP, min_h_amp) * (xa/2)
         
         
     def apply_steering_limits(self, new_steering, old_steering, coef, min_steering):
@@ -91,7 +91,8 @@ class UpdateMovement:
     def deactive_joystick(self, state, command):
         # Movimiento inactivo - desacelerar
         self.module = max(0, self.module - 0.01)
-        self.walking_speed = self.module * H_AMP * ((1 + cos(self.walking_direction - pi/2)) / 2 * 0.75 + 0.25)
+        xa = 1 + cos(self.walking_direction - pi/2)
+        self.walking_speed = self.module * H_AMP * (xa/2)
         self.steering = 1e6 if self.steering >= STEERING_THRESHOLD else min(1e6, self.steering * COEF)
         self.cw = 1
         if state.t > command.trec:
